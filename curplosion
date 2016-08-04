@@ -1,0 +1,76 @@
+#!/bin/perl
+
+=head1 NAME
+
+curplosion - cursor explosion thing
+
+=head1 DESCRIPTION
+
+no description yet
+
+=cut
+
+sub on_start {
+  my ($self) = @_;
+
+  $self->parse_keysym("C-Up", "perl:curplosion.curplode");
+
+ ()
+}
+
+sub fire {
+  my ($self, $size, $color) = @_;
+  my $term = $self->{'term'};
+
+  my ($row, $col) = $term->screen_cur;
+
+  $term->ROW_r($row-1, [(urxvt::SET_COLOR(urxvt::DEFAULT_RSTYLE, $color, $color)) x $size], $col - ($size-1)/2);
+  $term->ROW_r($row, [(urxvt::SET_COLOR(urxvt::DEFAULT_RSTYLE, $color, $color)) x $size], $col - ($size-1)/2);
+  $term->ROW_r($row+1, [(urxvt::SET_COLOR(urxvt::DEFAULT_RSTYLE, $color, $color)) x $size], $col - ($size-1)/2);
+}
+
+sub on_user_command {
+  my ($self, $string) = @_;
+  my $term = $self->{'term'};
+
+  if ($string =~ /curplode$/) {
+    my ($row, $col) = $term->screen_cur;
+
+    # backup rows rendition
+    my @backup;
+    push @backup, $term->ROW_r($row - 1);
+    push @backup, $term->ROW_r($row);
+    push @backup, $term->ROW_r($row + 1);
+
+    my $cname;
+    my $delay = 0.0;
+    my @colors = (7, 4, 3);
+    my @fires = (3, 7, 9, 11);
+    foreach my $c (@colors) {
+      foreach my $i (@fires) {
+        $cname = "col${c}ind$i";
+        $term->{"$cname"} = urxvt::timer
+                            ->new
+                            ->cb (sub {
+                              fire $self, $i, $c;
+                              $term->want_refresh;
+                            })
+                            ->after($delay);
+        $delay += 0.015;
+      };
+    };
+
+    # restore rows rendition
+    $term->{cleanup} = urxvt::timer
+                       ->new
+                       ->cb (sub {
+                         $term->ROW_r($row+1, pop @backup);
+                         $term->ROW_r($row, pop @backup);
+                         $term->ROW_r($row-1, pop @backup);
+                         $term->want_refresh;
+                       })
+                       ->after($delay);
+  }
+
+  ()
+}
