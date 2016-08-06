@@ -21,21 +21,30 @@ sub on_user_command {
 
   if ($string =~ /curplode$/) {
     # check against nesting
-    if (defined $self->{curplode_pos}) {
+    if (defined $self->{curplode_hooks}) {
       return;
     }
 
-    # store position
-    @{$self->{curplode_pos}} = $self->screen_cur;
-
-    # generate animation steps
+    # define animation
     my @colors = (3, 4, 7);
     my @fires = (3, 5, 7, 9);
+
+    # get position
+    my ($row, $col) = $self->screen_cur;
+
+    # generate animation steps
     foreach my $c (@colors) {
       foreach my $f (@fires) {
+        # check limits
+        while ( ($f - 1)/2 > $col){ $col++;}
+        while ( $col + ($f - 1)/2 >= $self->ncol){ $col--;}
+        # accept step
         push @{$self->{curplode_steps}}, { size => $f, color => $c };
       }
     }
+
+    # store position
+    @{$self->{curplode_pos}} = ($row, $col);
 
     # assign hooks
     $self->{'curplode_hooks'} = $self->on(refresh_begin => sub {incinerate $self},
