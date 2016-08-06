@@ -14,63 +14,75 @@ sub on_start {
   my ($self) = @_;
 
   $self->parse_keysym("C-slash", "perl:curplosion.curplode");
-
- ()
-}
-
-sub fire {
-  my ($self, $size, $color) = @_;
-  my $term = $self->{'term'};
-
-  my ($row, $col) = $term->screen_cur;
-
-  $term->ROW_r($row-1, [(urxvt::SET_COLOR(urxvt::DEFAULT_RSTYLE, $color, $color)) x $size], $col - ($size-1)/2);
-  $term->ROW_r($row, [(urxvt::SET_COLOR(urxvt::DEFAULT_RSTYLE, $color, $color)) x $size], $col - ($size-1)/2);
-  $term->ROW_r($row+1, [(urxvt::SET_COLOR(urxvt::DEFAULT_RSTYLE, $color, $color)) x $size], $col - ($size-1)/2);
 }
 
 sub on_user_command {
   my ($self, $string) = @_;
-  my $term = $self->{'term'};
 
   if ($string =~ /curplode$/) {
-    my ($row, $col) = $term->screen_cur;
+    # check against nesting
+    if (defined $self->{curplode_pos}) {
+      return;
+    }
 
-    # backup rows rendition
-    my @backup;
-    push @backup, $term->ROW_r($row - 1);
-    push @backup, $term->ROW_r($row);
-    push @backup, $term->ROW_r($row + 1);
+    # store position
+    @{$self->{curplode_pos}} = $self->screen_cur;
 
-    my $cname;
-    my $delay = 0.0;
-    my @colors = (7, 4, 3);
-    my @fires = (3, 7, 9, 11);
+    # generate animation steps
+    my @colors = (3, 4, 7);
+    my @fires = (3, 5, 7, 9);
     foreach my $c (@colors) {
-      foreach my $i (@fires) {
-        $cname = "col${c}ind$i";
-        $term->{"$cname"} = urxvt::timer
-                            ->new
-                            ->cb (sub {
-                              fire $self, $i, $c;
-                              $term->want_refresh;
-                            })
-                            ->after($delay);
-        $delay += 0.015;
-      };
-    };
+      foreach my $f (@fires) {
+        push @{$self->{curplode_steps}}, { size => $f, color => $c };
+      }
+    }
 
-    # restore rows rendition
-    $term->{cleanup} = urxvt::timer
-                       ->new
-                       ->cb (sub {
-                         $term->ROW_r($row+1, pop @backup);
-                         $term->ROW_r($row, pop @backup);
-                         $term->ROW_r($row-1, pop @backup);
-                         $term->want_refresh;
-                       })
-                       ->after($delay);
+    # trigger animation
+    $self->want_refresh;
   }
+}
 
-  ()
+sub fire {
+  my ($self, $row, $col, $size, $color) = @_;
+  return $self->ROW_r($row, [(urxvt::SET_COLOR(urxvt::DEFAULT_RSTYLE, $color, $color)) x $size], $col - ($size-1)/2);
+}
+
+sub on_refresh_begin {
+  my ($self) = @_;
+
+  if ( @{$self->{curplode_steps}} > 0) {
+    my ($row, $col) = @{$self->{curplode_pos}};
+
+    my $size  = $self->{curplode_steps}[0]{size};
+    my $color = $self->{curplode_steps}[0]{color};
+
+    $self->{curplode_ur} = fire $self, $row - 1, $col, $size, $color;
+    $self->{curplode_cr} = fire $self, $row,     $col, $size, $color;
+    $self->{curplode_lr} = fire $self, $row + 1, $col, $size, $color;
+  } else {
+    delete @{$self}{grep /^curplode_/, keys %$self};
+  }
+}
+
+sub on_refresh_end {
+  my ($self) = @_;
+
+  if ( @{$self->{curplode_steps}} > 0) {
+    my ($row, $col) = @{$self->{curplode_pos}};
+
+    my $step = $self->{curplode_steps}[0];
+
+    $self->ROW_r ($row - 1, delete $self->{curplode_ur});
+    $self->ROW_r ($row,     delete $self->{curplode_cr});
+    $self->ROW_r ($row + 1, delete $self->{curplode_lr});
+
+    # schedule next step
+    $self->{curplode_next} = urxvt::timer
+                             ->new
+                             ->cb (sub {
+                               shift @{$self->{curplode_steps}};
+                               $self->want_refresh;
+                             })
+                             ->after(0.005);
+  }
 }
