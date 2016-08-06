@@ -8,14 +8,24 @@ curplosion - don't know where your cursor is? explode it!
 
 =head1 DESCRIPTION
 
-no description yet
+Makes it easier to spot the cursor. The default trigger is  C-slash. To
+change it, adjust the following setting:
+
+  urxvt.curplosion.trigger: C-slash
 
 =cut
 
 sub on_start {
   my ($self) = @_;
 
-  $self->parse_keysym("C-slash", "perl:curplosion.curplode");
+  # parse settings
+  my $trigger = $self->x_resource("%.trigger");
+
+  # fallback to defaults
+  defined $trigger or $trigger = "C-slash";
+
+  # set trigger
+  $self->parse_keysym($trigger, "perl:curplosion.curplode");
 }
 
 sub on_user_command {
