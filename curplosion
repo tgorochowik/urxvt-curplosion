@@ -13,7 +13,7 @@ no description yet
 sub on_start {
   my ($self) = @_;
 
-  $self->parse_keysym("C-Up", "perl:curplosion.curplode");
+  $self->parse_keysym("C-slash", "perl:curplosion.curplode");
 
  ()
 }
