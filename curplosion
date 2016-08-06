@@ -13,6 +13,11 @@ change it, adjust the following setting:
 
   urxvt.curplosion.trigger: C-slash
 
+Play with the following settings to adjust the looks of the curplosion:
+
+  urxvt.curplosion.colors:  3, 4, 7
+  urxvt.curplosion.sizes:   3, 5, 7, 9
+
 =cut
 
 sub on_start {
@@ -20,12 +25,20 @@ sub on_start {
 
   # parse settings
   my $trigger = $self->x_resource("%.trigger");
+  my $colors  = $self->x_resource("%.colors");
+  my $sizes   = $self->x_resource("%.sizes");
 
   # fallback to defaults
   defined $trigger or $trigger = "C-slash";
+  defined $colors  or $colors  = "3, 4, 7";
+  defined $sizes   or $sizes   = "3, 5, 7, 9";
 
   # set trigger
   $self->parse_keysym($trigger, "perl:curplosion.curplode");
+
+  # store other settings
+  @{$self->{colors}} = split ", ", $colors;
+  @{$self->{sizes}}  = split ", ", $sizes;
 }
 
 sub on_user_command {
@@ -37,16 +50,12 @@ sub on_user_command {
       return;
     }
 
-    # define animation
-    my @colors = (3, 4, 7);
-    my @fires = (3, 5, 7, 9);
-
     # get position
     my ($row, $col) = $self->screen_cur;
 
     # generate animation steps
-    foreach my $c (@colors) {
-      foreach my $f (@fires) {
+    foreach my $c (@{$self->{colors}}) {
+      foreach my $f (@{$self->{sizes}}) {
         # check limits
         while ( ($f - 1)/2 > $col){ $col++;}
         while ( $col + ($f - 1)/2 >= $self->ncol){ $col--;}
