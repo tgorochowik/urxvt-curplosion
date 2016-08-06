@@ -37,6 +37,10 @@ sub on_user_command {
       }
     }
 
+    # assign hooks
+    $self->{'curplode_hooks'} = $self->on(refresh_begin => sub {incinerate $self},
+                                          refresh_end   => sub {extinguish $self});
+
     # trigger animation
     $self->want_refresh;
   }
@@ -47,7 +51,7 @@ sub fire {
   return $self->ROW_r($row, [(urxvt::SET_COLOR(urxvt::DEFAULT_RSTYLE, $color, $color)) x $size], $col - ($size-1)/2);
 }
 
-sub on_refresh_begin {
+sub incinerate {
   my ($self) = @_;
 
   if ( @{$self->{curplode_steps}} > 0) {
@@ -64,7 +68,7 @@ sub on_refresh_begin {
   }
 }
 
-sub on_refresh_end {
+sub extinguish {
   my ($self) = @_;
 
   if ( @{$self->{curplode_steps}} > 0) {
