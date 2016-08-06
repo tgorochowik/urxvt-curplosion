@@ -41,14 +41,10 @@ sub on_start {
 
   # fallback to defaults
   defined $trigger  or $trigger  = "C-slash";
-  defined $colors   or $colors   = "5, 7, 5";
-  defined $sizes    or $sizes    = "3, 7";
-  defined $duration or $duration = "50";
 
-  # verify the settings
-  $colors   =~ /^\s*\d+(,\s*\d+)*\s*$/ or return;
-  $sizes    =~ /^\s*\d+(,\s*\d+)*\s*$/ or return;
-  $duration =~ /^\s*\d+\s*$/           or return;
+  defined $colors   and $colors   =~ /^\s*\d+(,\s*\d+)*\s*$/ or $colors   = "5, 7, 5";
+  defined $sizes    and $sizes    =~ /^\s*\d+(,\s*\d+)*\s*$/ or $sizes    = "3, 7";
+  defined $duration and $duration =~ /^\s*\d+\s*$/           or $duration = "50";
 
   # set trigger
   $self->parse_keysym($trigger, "perl:curplosion.curplode");
