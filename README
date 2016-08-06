@@ -1,0 +1,26 @@
+urxvt-curplosion
+
+A cursor locator extension for urxvt.
+
+Installation:
+
+* Clone the extension into the urxvt extensions directory
+
+  $ mkdir -p ~/.urxvt/ext/
+  $ cd ~/.urxvt/ext/
+  $ git clone https://github.com/tgorochowik/urxvt-curplosion.git
+
+* Enable the extension in the ~/.Xdefaults file:
+
+  urxvt.perl-ext-common: curplosion/curplosion
+
+Available extra settings:
+
+  urxvt.curplosion.trigger:   C-slash
+  urxvt.curplosion.colors:    5, 7, 5
+  urxvt.curplosion.sizes:     3, 7
+  urxvt.curplosion.duration:  50
+
+Check the contents of the extension code for more information.
+
+Copyright (C) 2016 Tomasz Gorochowik <tgorochowik@gmail.com>
