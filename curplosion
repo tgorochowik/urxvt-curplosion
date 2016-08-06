@@ -15,12 +15,12 @@ change it, adjust the following setting:
 
 Play with the following settings to adjust the looks of the curplosion:
 
-  urxvt.curplosion.colors:    3, 4, 7
-  urxvt.curplosion.sizes:     3, 5, 7, 9
+  urxvt.curplosion.colors:    5, 7, 5
+  urxvt.curplosion.sizes:     3, 7
 
 Additionally, the duration of the curplosion can be adjusted:
 
-  urxvt.curplosion.duration:  200
+  urxvt.curplosion.duration:  50
 
 The unit of the duration is a millisecond. Also please note, that if
 the duration is set to a very small value, then the terminal might not
@@ -41,9 +41,9 @@ sub on_start {
 
   # fallback to defaults
   defined $trigger  or $trigger  = "C-slash";
-  defined $colors   or $colors   = "3, 4, 7";
-  defined $sizes    or $sizes    = "3, 5, 7, 9";
-  defined $duration or $duration = "200";
+  defined $colors   or $colors   = "5, 7, 5";
+  defined $sizes    or $sizes    = "3, 7";
+  defined $duration or $duration = "50";
 
   # verify the settings
   $colors   =~ /^\s*\d+(,\s*\d+)*\s*$/ or return;
