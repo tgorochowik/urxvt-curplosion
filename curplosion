@@ -1,8 +1,10 @@
 #!/bin/perl
 
+#author: tgorochowik@gmail.com
+
 =head1 NAME
 
-curplosion - cursor explosion thing
+curplosion - don't know where your cursor is? explode it!
 
 =head1 DESCRIPTION
 
