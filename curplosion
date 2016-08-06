@@ -15,8 +15,18 @@ change it, adjust the following setting:
 
 Play with the following settings to adjust the looks of the curplosion:
 
-  urxvt.curplosion.colors:  3, 4, 7
-  urxvt.curplosion.sizes:   3, 5, 7, 9
+  urxvt.curplosion.colors:    3, 4, 7
+  urxvt.curplosion.sizes:     3, 5, 7, 9
+
+Additionally, the duration of the curplosion can be adjusted:
+
+  urxvt.curplosion.duration:  200
+
+The unit of the duration is a millisecond. Also please note, that if
+the duration is set to a very small value, then the terminal might not
+be able to process it fast enough, and it will last much longer. The
+curplosion does NOT block the terminal, so setting it to a very large
+value will not prevent any other usage of the terminal.
 
 =cut
 
@@ -24,14 +34,16 @@ sub on_start {
   my ($self) = @_;
 
   # parse settings
-  my $trigger = $self->x_resource("%.trigger");
-  my $colors  = $self->x_resource("%.colors");
-  my $sizes   = $self->x_resource("%.sizes");
+  my $trigger  = $self->x_resource("%.trigger");
+  my $colors   = $self->x_resource("%.colors");
+  my $sizes    = $self->x_resource("%.sizes");
+  my $duration = $self->x_resource("%.duration");
 
   # fallback to defaults
-  defined $trigger or $trigger = "C-slash";
-  defined $colors  or $colors  = "3, 4, 7";
-  defined $sizes   or $sizes   = "3, 5, 7, 9";
+  defined $trigger  or $trigger  = "C-slash";
+  defined $colors   or $colors   = "3, 4, 7";
+  defined $sizes    or $sizes    = "3, 5, 7, 9";
+  defined $duration or $duration = "200";
 
   # set trigger
   $self->parse_keysym($trigger, "perl:curplosion.curplode");
@@ -39,6 +51,9 @@ sub on_start {
   # store other settings
   @{$self->{colors}} = split ", ", $colors;
   @{$self->{sizes}}  = split ", ", $sizes;
+
+  # calculate a single delay based on other settings
+  $self->{delay} = ($duration/1000.0)/(@{$self->{colors}} * @{$self->{sizes}});
 }
 
 sub on_user_command {
@@ -117,6 +132,6 @@ sub extinguish {
                                shift @{$self->{curplode_steps}};
                                $self->want_refresh;
                              })
-                             ->after(0.005);
+                             ->after($self->{delay});
   }
 }
