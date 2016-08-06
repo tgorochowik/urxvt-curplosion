@@ -45,6 +45,11 @@ sub on_start {
   defined $sizes    or $sizes    = "3, 5, 7, 9";
   defined $duration or $duration = "200";
 
+  # verify the settings
+  $colors   =~ /^\s*\d+(,\s*\d+)*\s*$/ or return;
+  $sizes    =~ /^\s*\d+(,\s*\d+)*\s*$/ or return;
+  $duration =~ /^\s*\d+\s*$/           or return;
+
   # set trigger
   $self->parse_keysym($trigger, "perl:curplosion.curplode");
 
