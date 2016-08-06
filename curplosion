@@ -77,10 +77,12 @@ sub on_user_command {
     foreach my $c (@{$self->{colors}}) {
       foreach my $f (@{$self->{sizes}}) {
         # check limits
-        while (($f - 1)/2 > $col) {$col++;}
-        while ($col + ($f - 1)/2 >= $self->ncol) {$col--;}
+        my $f_ = $f; # operating on a copy so it's recalculated each time
+        while ($f_ > $self->ncol) {$f_--;}
+        while (($f_ - 1)/2 > $col) {$col++;}
+        while ($col + ($f_ - 1)/2 >= $self->ncol) {$col--;}
         # accept step
-        push @{$self->{curplode_steps}}, {size => $f, color => $c};
+        push @{$self->{curplode_steps}}, {size => $f_, color => $c};
       }
     }
 
