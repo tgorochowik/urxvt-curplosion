@@ -77,10 +77,10 @@ sub on_user_command {
     foreach my $c (@{$self->{colors}}) {
       foreach my $f (@{$self->{sizes}}) {
         # check limits
-        while ( ($f - 1)/2 > $col){ $col++;}
-        while ( $col + ($f - 1)/2 >= $self->ncol){ $col--;}
+        while (($f - 1)/2 > $col) {$col++;}
+        while ($col + ($f - 1)/2 >= $self->ncol) {$col--;}
         # accept step
-        push @{$self->{curplode_steps}}, { size => $f, color => $c };
+        push @{$self->{curplode_steps}}, {size => $f, color => $c};
       }
     }
 
@@ -104,7 +104,7 @@ sub fire {
 sub incinerate {
   my ($self) = @_;
 
-  if ( @{$self->{curplode_steps}} > 0) {
+  if (@{$self->{curplode_steps}} > 0) {
     my ($row, $col) = @{$self->{curplode_pos}};
 
     my $size  = $self->{curplode_steps}[0]{size};
@@ -121,7 +121,7 @@ sub incinerate {
 sub extinguish {
   my ($self) = @_;
 
-  if ( @{$self->{curplode_steps}} > 0) {
+  if (@{$self->{curplode_steps}} > 0) {
     my ($row, $col) = @{$self->{curplode_pos}};
 
     my $step = $self->{curplode_steps}[0];
