@@ -8,7 +8,7 @@ Installation:
 
   $ mkdir -p ~/.urxvt/ext/
   $ cd ~/.urxvt/ext/
-  $ git clone https://github.com/tgorochowik/urxvt-curplosion.git
+  $ git clone https://github.com/tgorochowik/urxvt-curplosion.git curplosion
 
 * Enable the extension in the ~/.Xdefaults file:
 
