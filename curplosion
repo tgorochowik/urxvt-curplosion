@@ -63,8 +63,8 @@ sub on_start {
   $self->parse_keysym($trigger, "perl:curplosion.curplode");
 
   # store other settings
-  @{$self->{colors}} = split ", ", $colors;
-  @{$self->{sizes}}  = split ", ", $sizes;
+  @{$self->{colors}} = split ",", $colors;
+  @{$self->{sizes}}  = split ",", $sizes;
 
   # calculate a single delay based on other settings
   $self->{delay} = ($duration/1000.0)/(@{$self->{colors}} * @{$self->{sizes}});
