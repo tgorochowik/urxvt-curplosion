@@ -41,6 +41,11 @@ be able to process it fast enough, and it will last much longer. The
 curplosion does NOT block the terminal, so setting it to a very large
 value will not prevent any other usage of the terminal.
 
+To automatically trigger a curplosion on window focus, set the
+following variable to true:
+
+  urxvt.curplosion.show-on-focus: true
+
 =cut
 
 sub on_start {
@@ -51,6 +56,7 @@ sub on_start {
   my $colors   = $self->x_resource("%.colors");
   my $sizes    = $self->x_resource("%.sizes");
   my $duration = $self->x_resource("%.duration");
+  my $on_focus = $self->x_resource("%.show-on-focus");
 
   # fallback to defaults
   defined $trigger or $trigger = "C-slash";
@@ -58,6 +64,7 @@ sub on_start {
   $colors   =~ /^\s*\d+(,\s*\d+)*\s*$/ or $colors   = "5, 7, 5";
   $sizes    =~ /^\s*\d+(,\s*\d+)*\s*$/ or $sizes    = "3, 7";
   $duration =~ /^\s*\d+\s*$/           or $duration = "50";
+  $on_focus =~ /^true$/i               or undef $on_focus;
 
   # set trigger
   $self->parse_keysym($trigger, "perl:curplosion.curplode");
@@ -68,43 +75,53 @@ sub on_start {
 
   # calculate a single delay based on other settings
   $self->{delay} = ($duration / 1000.0) / (@{$self->{colors}} * @{$self->{sizes}});
+
+  if (defined $on_focus) {
+    $self->{global_hooks} = $self->on(focus_in => sub {kindle $self});
+  }
 }
 
 sub on_user_command {
   my ($self, $string) = @_;
 
   if ($string =~ /curplode$/) {
-    # check against nesting
-    if (defined $self->{curplode_hooks}) {
-      return;
-    }
-
-    # get position
-    my ($row, $col) = $self->screen_cur;
-
-    # generate animation steps
-    foreach my $c (@{$self->{colors}}) {
-      foreach my $f (@{$self->{sizes}}) {
-        # check limits
-        my $f_ = $f; # operating on a copy so it's recalculated each time
-        while ($f_ > $self->ncol) {$f_--;}
-        while ((($f_ - 1) / 2) > $col) {$col++;}
-        while (($col + ($f_ - 1) / 2) >= $self->ncol) {$col--;}
-        # accept step
-        push @{$self->{curplode_steps}}, {size => $f_, color => $c};
-      }
-    }
-
-    # store position
-    @{$self->{curplode_pos}} = ($row, $col);
-
-    # assign hooks
-    $self->{'curplode_hooks'} = $self->on(refresh_begin => sub {incinerate $self},
-                                          refresh_end   => sub {extinguish $self});
-
-    # trigger animation
-    $self->want_refresh;
+    kindle $self;
   }
+}
+
+sub kindle {
+  my ($self) = @_;
+
+  # check against nesting
+  if (defined $self->{curplode_hooks}) {
+    return;
+  }
+
+  # get position
+  my ($row, $col) = $self->screen_cur;
+
+  # generate animation steps
+  foreach my $c (@{$self->{colors}}) {
+    foreach my $f (@{$self->{sizes}}) {
+      # check limits
+      my $f_ = $f; # operating on a copy so it's recalculated each time
+      while ($f_ > $self->ncol) {$f_--;}
+      while (($f_ - 1) / 2 > $col) {$col++;}
+      while ($col + (($f_ - 1) / 2) >= $self->ncol) {$col--;}
+      # accept step
+      push @{$self->{curplode_steps}}, {size => $f_, color => $c};
+    }
+  }
+
+  # store position
+  @{$self->{curplode_pos}} = ($row, $col);
+
+  # assign hooks
+  $self->{'curplode_hooks'} = $self->on(refresh_begin => sub {incinerate $self},
+                                        refresh_end   => sub {extinguish $self});
+
+  # trigger animation
+  $self->want_refresh;
 }
 
 sub fire {
