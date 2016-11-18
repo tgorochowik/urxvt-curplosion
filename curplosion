@@ -24,16 +24,16 @@ curplosion - don't know where your cursor is? explode it!
 Makes it easier to spot the cursor. The default trigger is  C-slash. To
 change it, adjust the following setting:
 
-  urxvt.curplosion.trigger: C-slash
+  urxvt.curplosion.trigger:  C-slash
 
 Play with the following settings to adjust the looks of the curplosion:
 
-  urxvt.curplosion.colors:    5, 7, 5
-  urxvt.curplosion.sizes:     3, 7
+  urxvt.curplosion.colors:   5, 7, 5
+  urxvt.curplosion.sizes:    3, 7
 
 Additionally, the duration of the curplosion can be adjusted:
 
-  urxvt.curplosion.duration:  50
+  urxvt.curplosion.duration: 50
 
 The unit of the duration is a millisecond. Also please note, that if
 the duration is set to a very small value, then the terminal might not
@@ -53,7 +53,7 @@ sub on_start {
   my $duration = $self->x_resource("%.duration");
 
   # fallback to defaults
-  defined $trigger  or $trigger  = "C-slash";
+  defined $trigger or $trigger = "C-slash";
 
   $colors   =~ /^\s*\d+(,\s*\d+)*\s*$/ or $colors   = "5, 7, 5";
   $sizes    =~ /^\s*\d+(,\s*\d+)*\s*$/ or $sizes    = "3, 7";
@@ -67,7 +67,7 @@ sub on_start {
   @{$self->{sizes}}  = split ",", $sizes;
 
   # calculate a single delay based on other settings
-  $self->{delay} = ($duration/1000.0)/(@{$self->{colors}} * @{$self->{sizes}});
+  $self->{delay} = ($duration / 1000.0) / (@{$self->{colors}} * @{$self->{sizes}});
 }
 
 sub on_user_command {
@@ -88,8 +88,8 @@ sub on_user_command {
         # check limits
         my $f_ = $f; # operating on a copy so it's recalculated each time
         while ($f_ > $self->ncol) {$f_--;}
-        while (($f_ - 1)/2 > $col) {$col++;}
-        while ($col + ($f_ - 1)/2 >= $self->ncol) {$col--;}
+        while ((($f_ - 1) / 2) > $col) {$col++;}
+        while (($col + ($f_ - 1) / 2) >= $self->ncol) {$col--;}
         # accept step
         push @{$self->{curplode_steps}}, {size => $f_, color => $c};
       }
@@ -109,7 +109,9 @@ sub on_user_command {
 
 sub fire {
   my ($self, $row, $col, $size, $color) = @_;
-  return $self->ROW_r($row, [(urxvt::SET_COLOR(urxvt::DEFAULT_RSTYLE, $color, $color)) x $size], $col - ($size-1)/2);
+  return $self->ROW_r($row,
+                      [(urxvt::SET_COLOR(urxvt::DEFAULT_RSTYLE, $color, $color)) x $size],
+                      $col - (($size - 1) / 2));
 }
 
 sub incinerate {
@@ -144,10 +146,7 @@ sub extinguish {
     # schedule next step
     $self->{curplode_next} = urxvt::timer
                              ->new
-                             ->cb (sub {
-                               shift @{$self->{curplode_steps}};
-                               $self->want_refresh;
-                             })
+                             ->cb (sub {shift @{$self->{curplode_steps}}; $self->want_refresh; })
                              ->after($self->{delay});
   }
 }
