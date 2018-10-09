@@ -41,10 +41,11 @@ be able to process it fast enough, and it will last much longer. The
 curplosion does NOT block the terminal, so setting it to a very large
 value will not prevent any other usage of the terminal.
 
-To automatically trigger a curplosion on window focus, set the
-following variable to true:
+To automatically trigger a curplosion on window focus, or on terminal
+bell, set the corresponding variables:
 
   urxvt.curplosion.show-on-focus: true
+  urxvt.curplosion.show-on-bell true
 
 =cut
 
@@ -57,6 +58,7 @@ sub on_start {
   my $sizes    = $self->x_resource("%.sizes");
   my $duration = $self->x_resource("%.duration");
   my $on_focus = $self->x_resource("%.show-on-focus");
+  my $on_bell  = $self->x_resource("%.show-on-bell");
 
   # fallback to defaults
   defined $trigger or $trigger = "C-slash";
@@ -65,6 +67,7 @@ sub on_start {
   $sizes    =~ /^\s*\d+(,\s*\d+)*\s*$/ or $sizes    = "3, 7";
   $duration =~ /^\s*\d+\s*$/           or $duration = "50";
   $on_focus =~ /^true$/i               or undef $on_focus;
+  $on_bell  =~ /^true$/i               or undef $on_bell;
 
   # set trigger
   $self->parse_keysym($trigger, "perl:curplosion.curplode");
@@ -78,6 +81,10 @@ sub on_start {
 
   if (defined $on_focus) {
     $self->{global_hooks} = $self->on(focus_in => sub {kindle $self});
+  }
+
+  if (defined $on_bell) {
+    $self->{global_hooks} = $self->on(bell => sub {kindle $self});
   }
 }
 
